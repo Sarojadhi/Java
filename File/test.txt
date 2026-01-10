@@ -1,0 +1,2 @@
+simpleExample Of buffer. 
+these line make a new file and be writen inside
