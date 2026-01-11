@@ -1,24 +1,23 @@
+import java.io.*;
+import java.util.Scanner;
+
 public class LibraryManagementSystem {
 
     static final String fileName = "student.txt";
-    Scanner sc = new Scanner(System.in);
+    static Scanner sc = new Scanner(System.in);
+
     public static void main(String[] args) {
-        
+
         File f = new File(fileName);
+        try {
+            if (f.createNewFile()) {
+                System.out.println("File created: " + f.getName());
+            }
+        } catch (IOException e) {
+            System.out.println("Error: " + e);
+        }
 
-        try (f.createNewFile()) {
-
-            System.out.println("File created: " + f.getName());
-
-        } 
-        catch (IOException e)
-         {
-            System.out.println("An error occurred."+e);
-
-       }
-
-
-         while (true) {
+        while (true) {
             System.out.println("\n==== Student Record System ====");
             System.out.println("1. Add Student");
             System.out.println("2. View All Students");
@@ -28,7 +27,7 @@ public class LibraryManagementSystem {
             System.out.print("Choose option: ");
 
             int choice = sc.nextInt();
-            sc.nextLine(); // clear buffer
+            sc.nextLine();
 
             switch (choice) {
                 case 1 -> addStudent();
@@ -41,52 +40,113 @@ public class LibraryManagementSystem {
                 }
                 default -> System.out.println("Invalid choice!");
             }
-
-
-            }
-            // ADD STUDENT 
-
-            static void addStudent(){
-            try {
-
-                bufferWriter bw = new bufferwritter (new filewriter (fileName,true));
-                Scanner sc = new Scanner (System.in);
-                 System.out.println("\n--- Student Adding Records ---");
-                System.out.print ("Enter Student ID: ");
-                String Id = sc.nextLine();
-                System.out.print ("Enter Student Name: ");
-                String name = sc.nextLine();
-                System.out.print ("Enter Student Age: ");
-                int age = sc.nextInt();
-                bw.write (Id +", "+name +" , "+age+" , ");
-                bw.close();
-                System.out.println("Student added Sucessfully "+Id+" "+name+" "+age);
-            } catch (IOException e) {
-                System.out.println("An error occurred."+e);
-
-            }
-            }
-            // VIEW STUDENT
-            static void ViewStudentDetails{
-                try{
-                    BufferedReaderbr = new BufferedReader (new FileReader(fileName,true));
-                    String l;
-                    System.out.println("\n--- Student Records ---");
-                    while((l=br.readLine())!null){
-                        String[] data = l.split(",");
-                        System.out.println("ID: "+data[0]+" Name: "+data[1]+" Age: "+data[2]);
-                    }
-
-                }
-                catch(FileNotFoundException e ){
-                    System.out.println("File not found "+e);
-
-                }
-                catch(IOException e){
-                    System.out.println("An error occurred."+e);
-            }
-
-            
+        }
     }
 
+    // ADD STUDENT
+    static void addStudent() {
+        try (BufferedWriter bw = new BufferedWriter(new FileWriter(fileName, true))) {
+
+            System.out.print("Enter Student ID: ");
+            String id = sc.nextLine();
+            System.out.print("Enter Student Name: ");
+            String name = sc.nextLine();
+            System.out.print("Enter Student Age: ");
+            int age = sc.nextInt();
+            sc.nextLine();
+
+            bw.write(id + "," + name + "," + age);
+            bw.newLine();
+
+            System.out.println("Student added successfully!");
+
+        } catch (IOException e) {
+            System.out.println("Error: " + e);
+        }
     }
+
+    // VIEW STUDENTS
+    static void viewStudents() {
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+
+            String line;
+            System.out.println("\n--- Student Records ---");
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",");
+                System.out.println("ID: " + data[0] +
+                        " Name: " + data[1] +
+                        " Age: " + data[2]);
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error: " + e);
+        }
+    }
+
+    // SEARCH STUDENT
+    static void searchStudent() {
+        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
+
+            System.out.print("Enter Student ID to search: ");
+            String searchId = sc.nextLine();
+            String line;
+            boolean found = false;
+
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data[0].equals(searchId)) {
+                    System.out.println("ID: " + data[0] +
+                            " Name: " + data[1] +
+                            " Age: " + data[2]);
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                System.out.println("Student not found.");
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error: " + e);
+        }
+    }
+
+    // DELETE STUDENT
+    static void deleteStudent() {
+        File inputFile = new File(fileName);
+        File tempFile = new File("temp.txt");
+
+        try (
+            BufferedReader br = new BufferedReader(new FileReader(inputFile));
+            BufferedWriter bw = new BufferedWriter(new FileWriter(tempFile))
+        ) {
+            System.out.print("Enter Student ID to delete: ");
+            String deleteId = sc.nextLine();
+            String line;
+            boolean found = false;
+
+            while ((line = br.readLine()) != null) {
+                String[] data = line.split(",");
+                if (data[0].equals(deleteId)) {
+                    found = true;
+                    continue;
+                }
+                bw.write(line);
+                bw.newLine();
+            }
+
+            if (found) {
+                inputFile.delete();
+                tempFile.renameTo(inputFile);
+                System.out.println("Student deleted successfully.");
+            } else {
+                tempFile.delete();
+                System.out.println("Student not found.");
+            }
+
+        } catch (IOException e) {
+            System.out.println("Error: " + e);
+        }
+    }
+}
